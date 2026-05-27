@@ -1,6 +1,37 @@
 #!/usr/bin/env bash
 
-source "$(dirname "$0")/../lib/spinner.sh"
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  cat <<EOF
+Usage: $(basename "$0")
 
-with_claude_spinner -p "what did i do this week?" --allowedTools "Bash(git log)" \
+Summarize this week's git activity in the current repository.
+Runs git log (since last Monday, authored by you) and git status,
+then asks Claude to summarize the result.
+
+Options:
+  -h, --help    Show this help message
+EOF
+  exit 0
+fi
+
+source "$(dirname "$0")/../shared/spinner.sh"
+
+AUTHOR="$(git config user.email)"
+LOG="$(git log --since='last monday' --author="$AUTHOR" --pretty=format:'%h %ad %s' --date=short)"
+STATUS="$(git status --short)"
+
+if [[ -z "$LOG" && -z "$STATUS" ]]; then
+  echo "No activity this week in $(basename "$(pwd)")."
+  exit 0
+fi
+
+PROMPT="Summarize what I did this week in this repo. Be concise.
+
+Commits this week (hash, date, message):
+$LOG
+
+Uncommitted changes:
+$STATUS"
+
+with_claude_spinner -p "$PROMPT" \
   | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'

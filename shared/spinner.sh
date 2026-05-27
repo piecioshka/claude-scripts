@@ -32,9 +32,9 @@ with_spinner() {
 # Usage:
 #   with_claude_spinner -p "prompt" --allowedTools "..." | jq ...
 with_claude_spinner() {
-  local lib_dir
-  lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local tmp_dir="$lib_dir/../tmp"
+  local shared_dir
+  shared_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local tmp_dir="$shared_dir/../tmp"
   mkdir -p "$tmp_dir"
   local status_file result_file
   status_file=$(mktemp "$tmp_dir/spinner-status.XXXXXX")

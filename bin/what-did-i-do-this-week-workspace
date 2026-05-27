@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  cat <<EOF
+Usage: $(basename "$0") [directory]
+
+Summarize this week's git activity across all repositories in a workspace.
+For each subdirectory containing a .git folder, runs git log on the main
+(or master) branch since last Monday, then asks Claude to summarize.
+
+Arguments:
+  directory     Workspace directory to scan (default: current directory)
+
+Options:
+  -h, --help    Show this help message
+EOF
+  exit 0
+fi
+
+source "$(dirname "$0")/../shared/spinner.sh"
+
+WORKSPACE="${1:-$(pwd)}"
+if ! WORKSPACE="$(cd "$WORKSPACE" 2>/dev/null && pwd)"; then
+  echo "Error: directory '${1:-$(pwd)}' does not exist" >&2
+  exit 1
+fi
+
+ALL_LOG=""
+for repo in "$WORKSPACE"/*/; do
+  [[ -d "$repo/.git" ]] || continue
+  name="$(basename "$repo")"
+
+  main_branch=""
+  for b in main master; do
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$b"; then
+      main_branch="$b"
+      break
+    fi
+  done
+  [[ -z "$main_branch" ]] && continue
+
+  author="$(git -C "$repo" config user.email)"
+  log="$(git -C "$repo" log "$main_branch" --since='last monday' --author="$author" --pretty=format:'%h %ad %s' --date=short)"
+
+  if [[ -n "$log" ]]; then
+    ALL_LOG+=$'\n## '"$name"$' ('"$main_branch"$')\n'"$log"$'\n'
+  fi
+done
+
+if [[ -z "$ALL_LOG" ]]; then
+  echo "No activity this week across repositories in $WORKSPACE."
+  exit 0
+fi
+
+PROMPT="Summarize what I did this week across these repositories. Group by repo. Be concise.
+$ALL_LOG"
+
+with_claude_spinner -p "$PROMPT" \
+  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'

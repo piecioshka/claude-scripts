@@ -19,4 +19,5 @@ set -gx PATH $HOME/projects/claude-scripts/bin/ $PATH
 
 ## Commands
 
-- [`what-did-i-do-this-week`](bin/what-did-i-do-this-week): Summarize your weekly activities using Claude AI.
+- [`what-did-i-do-this-week`](bin/what-did-i-do-this-week): Summarize this week's git activity in the current repository.
+- [`what-did-i-do-this-week-workspace [dir]`](bin/what-did-i-do-this-week-workspace): Summarize this week's git activity across all repositories in a given workspace directory (defaults to the current directory).
