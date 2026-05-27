@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+source "$(dirname "$0")/../lib/spinner.sh"
+
+with_claude_spinner -p "what did i do this week?" --allowedTools "Bash(git log)" \
+  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'
