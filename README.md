@@ -53,3 +53,7 @@ what-did-i-do-this-week-workspace ~/projects
 - [`bin/`](bin/) — executable commands, added to `$PATH`
 - [`shared/`](shared/) — sourced helpers (e.g. spinner)
 - `tmp/` — local scratch files (created on demand, git-ignored)
+
+## License
+
+[The MIT License](http://piecioshka.mit-license.org) @ 2026
