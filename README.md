@@ -56,4 +56,4 @@ what-did-i-do-this-week-workspace ~/projects
 
 ## License
 
-[The MIT License](http://piecioshka.mit-license.org) @ 2026
+[The MIT License](https://piecioshka.mit-license.org) @ 2026
