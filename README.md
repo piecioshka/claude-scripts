@@ -48,6 +48,16 @@ what-did-i-do-this-week-workspace
 what-did-i-do-this-week-workspace ~/projects
 ```
 
+### [`ai-commit`](bin/ai-commit)
+
+Commit the current changes in the **current repository**. Claude reads `git status`, `git diff` and the recent `git log`, learns the commit message conventions of the repo (Conventional Commits, scopes, language) and creates one or more commits that follow them. When something is staged, only the staged changes are committed. It never pushes, amends or rewrites history.
+
+```bash
+cd ~/projects/my-repo
+ai-commit
+ai-commit "one commit only"
+```
+
 ## Project layout
 
 - [`bin/`](bin/) — executable commands, added to `$PATH`

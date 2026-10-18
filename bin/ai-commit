@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  cat <<EOF
+Usage: $(basename "$0") [hint]
+
+Let Claude commit the current changes in this repository.
+Claude reads git status, git diff and the recent git log, learns the commit
+message conventions used by the repo (Conventional Commits, scopes, language)
+and creates one or more commits that follow them.
+
+Staged changes only are committed when something is staged; otherwise the
+changes are split into logical commits. Claude never pushes, amends or
+rewrites history.
+
+Arguments:
+  hint          Optional extra instruction, e.g. "one commit only"
+
+Options:
+  -h, --help    Show this help message
+EOF
+  exit 0
+fi
+
+source "$(dirname "$0")/../shared/spinner.sh"
+
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "Not a git repository: $(pwd)" >&2
+  exit 1
+fi
+
+if [[ -z "$(git status --porcelain)" ]]; then
+  echo "Nothing to commit in $(basename "$(git rev-parse --show-toplevel)")."
+  exit 0
+fi
+
+HEAD_BEFORE="$(git rev-parse --verify --quiet HEAD)"
+
+PROMPT="Commit the current changes in this git repository.
+
+1. Run git status, git diff, git diff --cached and git log -n 30 --format='%s%n%b---'.
+2. From the log, learn the commit message conventions of THIS repo and follow them exactly:
+   Conventional Commits or not, scopes, language, casing, subject length, body style.
+   If the history is empty, use short imperative English subjects.
+3. If anything is already staged, commit ONLY the staged changes.
+   Otherwise split the changes into logical commits (one logical change = one commit)
+   and stage explicit paths. Never use git add -A or git add .
+4. If the project has a formatter check script (e.g. npm run format:check), run it first
+   and report failures instead of committing unformatted files.
+5. Never push, never amend, never rebase or reset, never touch existing commits.
+6. Never add Co-Authored-By or any other AI attribution trailer or line.
+7. Finish with a short list of the created commits (hash + subject)."
+
+if [[ -n "$1" ]]; then
+  PROMPT="$PROMPT
+
+Extra instruction from the user: $1"
+fi
+
+with_claude_spinner -p "$PROMPT" \
+  --allowedTools "Read" "Grep" "Glob" \
+    "Bash(git status:*)" "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
+    "Bash(git add:*)" "Bash(git commit:*)" "Bash(git restore --staged:*)" \
+    "Bash(npm run format:check)" "Bash(npx prettier --check:*)" \
+  --disallowedTools "Bash(git push:*)" "Bash(git commit --amend:*)" \
+    "Bash(git reset:*)" "Bash(git rebase:*)" \
+  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'
+
+RANGE="HEAD"
+[[ -n "$HEAD_BEFORE" ]] && RANGE="$HEAD_BEFORE..HEAD"
+if git log "$RANGE" --format=%B 2>/dev/null | grep -qiE "^co-authored-by:"; then
+  echo
+  echo "WARNING: new commits contain a Co-Authored-By trailer." >&2
+fi
