@@ -70,7 +70,7 @@ what-did-i-do-this-week-workspace
 # Scan a specific workspace
 what-did-i-do-this-week-workspace ~/projects
 
-# Export to PDF
+# Scan a specific workspace and export to PDF
 what-did-i-do-this-week-workspace ~/projects | npx md-to-pdf > this-week-workspace.pdf
 ```
 
