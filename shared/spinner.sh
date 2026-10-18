@@ -2,14 +2,21 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/colors.sh"
 
+# The spinner draws on the terminal; without one (cron, CI) it stays silent.
+if { : > /dev/tty; } 2>/dev/null; then
+  SPINNER_TTY=/dev/tty
+else
+  SPINNER_TTY=/dev/null
+fi
+
 # Prints one spinner frame to the terminal.
-# The spinner always writes to /dev/tty, so only NO_COLOR disables its colors.
+# The spinner writes to the terminal, so only NO_COLOR disables its colors.
 _spinner_frame() {
   local frame="$1" message="$2" elapsed="$3"
   if [[ -z "${NO_COLOR:-}" ]]; then
-    printf "\r\033[K\033[36m%s\033[0m %s \033[2m(%ds)\033[0m" "$frame" "$message" "$elapsed" > /dev/tty
+    printf "\r\033[K\033[36m%s\033[0m %s \033[2m(%ds)\033[0m" "$frame" "$message" "$elapsed" > "$SPINNER_TTY"
   else
-    printf "\r\033[K%s %s (%ds)" "$frame" "$message" "$elapsed" > /dev/tty
+    printf "\r\033[K%s %s (%ds)" "$frame" "$message" "$elapsed" > "$SPINNER_TTY"
   fi
 }
 
@@ -34,7 +41,7 @@ with_spinner() {
     _spinner_frame "${frames:$i:1}" "$message" "$elapsed"
     sleep 0.1
   done
-  printf "\r\033[K" > /dev/tty
+  printf "\r\033[K" > "$SPINNER_TTY"
 
   cat <&3
   exec 3<&-
@@ -106,7 +113,7 @@ with_claude_spinner() {
     _spinner_frame "${frames:$i:1}" "$status" "$elapsed"
     sleep 0.1
   done
-  printf "\r\033[K" > /dev/tty
+  printf "\r\033[K" > "$SPINNER_TTY"
   wait "$parser_pid" 2>/dev/null
 
   cat "$result_file"
