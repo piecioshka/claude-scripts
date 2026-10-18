@@ -59,6 +59,16 @@ what-did-i-do-this-week-workspace
 what-did-i-do-this-week-workspace ~/projects
 ```
 
+### Export to PDF
+
+`what-did-i-do-this-week` and `what-did-i-do-this-week-workspace` print the summary as Markdown on stdout (the spinner goes to the terminal only), so you can pipe it to [`md-to-pdf`](https://github.com/simonhaenisch/md-to-pdf) to get a PDF file:
+
+```bash
+what-did-i-do-this-week | npx md-to-pdf > this-week.pdf
+
+what-did-i-do-this-week-workspace ~/projects | npx md-to-pdf > this-week-workspace.pdf
+```
+
 ## License
 
 [The MIT License](https://piecioshka.mit-license.org) @ 2026
