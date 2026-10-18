@@ -1,27 +1,41 @@
 #!/usr/bin/env bash
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+SHOW_HELP=""
+for arg in "$@"; do
+  case "$arg" in
+    -h | --help) SHOW_HELP=1 ;;
+    --no-color) export NO_COLOR=1 ;;
+    *)
+      echo "Unknown argument: $arg" >&2
+      exit 1
+      ;;
+  esac
+done
+
+source "$(dirname "$0")/../shared/spinner.sh"
+source "$(dirname "$0")/../shared/output.sh"
+
+if [[ -n "$SHOW_HELP" ]]; then
   cat <<EOF
-Usage: $(basename "$0")
+${BOLD}Usage:${RESET} $(basename "$0") [options]
 
 Summarize this week's git activity in the current repository.
 Runs git log (since last Monday, authored by you) and git status,
 then asks Claude to summarize the result.
 
-Options:
+${BOLD}Options:${RESET}
+  --no-color    Disable colored output (also: NO_COLOR=1)
   -h, --help    Show this help message
 EOF
   exit 0
 fi
-
-source "$(dirname "$0")/../shared/spinner.sh"
 
 AUTHOR="$(git config user.email)"
 LOG="$(git log --since='last monday' --author="$AUTHOR" --pretty=format:'%h %ad %s' --date=short)"
 STATUS="$(git status --short)"
 
 if [[ -z "$LOG" && -z "$STATUS" ]]; then
-  echo "No activity this week in $(basename "$(pwd)")."
+  print_info "No activity this week in $(basename "$(pwd)")."
   exit 0
 fi
 
@@ -34,4 +48,4 @@ Uncommitted changes:
 $STATUS"
 
 with_claude_spinner -p "$PROMPT" \
-  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'
+  | print_claude_result

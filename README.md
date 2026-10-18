@@ -32,7 +32,9 @@ set -gx PATH $HOME/projects/claude-scripts/bin/ $PATH
 
 ## Commands
 
-All commands support `-h` / `--help`.
+All commands support `-h` / `--help` and print the Claude model used, the run time and the cost before the result.
+
+Output is colored when it goes to a terminal. Pass `--no-color` or set [`NO_COLOR`](https://no-color.org) to disable colors; they are also turned off automatically when the output is piped (e.g. to `md-to-pdf`).
 
 ### [`ai-commit`](bin/ai-commit)
 

@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+HINT=""
+SHOW_HELP=""
+for arg in "$@"; do
+  case "$arg" in
+    -h | --help) SHOW_HELP=1 ;;
+    --no-color) export NO_COLOR=1 ;;
+    *) HINT="$arg" ;;
+  esac
+done
+
+source "$(dirname "$0")/../shared/spinner.sh"
+source "$(dirname "$0")/../shared/output.sh"
+
+if [[ -n "$SHOW_HELP" ]]; then
   cat <<EOF
-Usage: $(basename "$0") [hint]
+${BOLD}Usage:${RESET} $(basename "$0") [options] [hint]
 
 Let Claude commit the current changes in this repository.
 Claude reads git status, git diff and the recent git log, learns the commit
@@ -13,24 +26,23 @@ Staged changes only are committed when something is staged; otherwise the
 changes are split into logical commits. Claude never pushes, amends or
 rewrites history.
 
-Arguments:
+${BOLD}Arguments:${RESET}
   hint          Optional extra instruction, e.g. "one commit only"
 
-Options:
+${BOLD}Options:${RESET}
+  --no-color    Disable colored output (also: NO_COLOR=1)
   -h, --help    Show this help message
 EOF
   exit 0
 fi
 
-source "$(dirname "$0")/../shared/spinner.sh"
-
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  echo "Not a git repository: $(pwd)" >&2
+  print_error "Not a git repository: $(pwd)"
   exit 1
 fi
 
 if [[ -z "$(git status --porcelain)" ]]; then
-  echo "Nothing to commit in $(basename "$(git rev-parse --show-toplevel)")."
+  print_info "Nothing to commit in $(basename "$(git rev-parse --show-toplevel)")."
   exit 0
 fi
 
@@ -51,10 +63,10 @@ PROMPT="Commit the current changes in this git repository.
 6. Never add Co-Authored-By or any other AI attribution trailer or line.
 7. Finish with a short list of the created commits (hash + subject)."
 
-if [[ -n "$1" ]]; then
+if [[ -n "$HINT" ]]; then
   PROMPT="$PROMPT
 
-Extra instruction from the user: $1"
+Extra instruction from the user: $HINT"
 fi
 
 with_claude_spinner -p "$PROMPT" \
@@ -64,11 +76,11 @@ with_claude_spinner -p "$PROMPT" \
     "Bash(npm run format:check)" "Bash(npx prettier --check:*)" \
   --disallowedTools "Bash(git push:*)" "Bash(git commit --amend:*)" \
     "Bash(git reset:*)" "Bash(git rebase:*)" \
-  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'
+  | print_claude_result
 
 RANGE="HEAD"
 [[ -n "$HEAD_BEFORE" ]] && RANGE="$HEAD_BEFORE..HEAD"
 if git log "$RANGE" --format=%B 2>/dev/null | grep -qiE "^co-authored-by:"; then
   echo
-  echo "WARNING: new commits contain a Co-Authored-By trailer." >&2
+  print_warning "WARNING: new commits contain a Co-Authored-By trailer."
 fi

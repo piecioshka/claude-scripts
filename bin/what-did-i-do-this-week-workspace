@@ -1,27 +1,39 @@
 #!/usr/bin/env bash
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+SHOW_HELP=""
+DIR_ARG=""
+for arg in "$@"; do
+  case "$arg" in
+    -h | --help) SHOW_HELP=1 ;;
+    --no-color) export NO_COLOR=1 ;;
+    *) DIR_ARG="$arg" ;;
+  esac
+done
+
+source "$(dirname "$0")/../shared/spinner.sh"
+source "$(dirname "$0")/../shared/output.sh"
+
+if [[ -n "$SHOW_HELP" ]]; then
   cat <<EOF
-Usage: $(basename "$0") [directory]
+${BOLD}Usage:${RESET} $(basename "$0") [options] [directory]
 
 Summarize this week's git activity across all repositories in a workspace.
 For each subdirectory containing a .git folder, runs git log on the main
 (or master) branch since last Monday, then asks Claude to summarize.
 
-Arguments:
+${BOLD}Arguments:${RESET}
   directory     Workspace directory to scan (default: current directory)
 
-Options:
+${BOLD}Options:${RESET}
+  --no-color    Disable colored output (also: NO_COLOR=1)
   -h, --help    Show this help message
 EOF
   exit 0
 fi
 
-source "$(dirname "$0")/../shared/spinner.sh"
-
-WORKSPACE="${1:-$(pwd)}"
+WORKSPACE="${DIR_ARG:-$(pwd)}"
 if ! WORKSPACE="$(cd "$WORKSPACE" 2>/dev/null && pwd)"; then
-  echo "Error: directory '${1:-$(pwd)}' does not exist" >&2
+  print_error "Error: directory '${DIR_ARG:-$(pwd)}' does not exist"
   exit 1
 fi
 
@@ -48,7 +60,7 @@ for repo in "$WORKSPACE"/*/; do
 done
 
 if [[ -z "$ALL_LOG" ]]; then
-  echo "No activity this week across repositories in $WORKSPACE."
+  print_info "No activity this week across repositories in $WORKSPACE."
   exit 0
 fi
 
@@ -56,4 +68,4 @@ PROMPT="Summarize what I did this week across these repositories. Group by repo.
 $ALL_LOG"
 
 with_claude_spinner -p "$PROMPT" \
-  | jq -r '"Time: \(.duration_ms / 1000)s\nCost: $\(.total_cost_usd)\n\n\(.result)"'
+  | print_claude_result
