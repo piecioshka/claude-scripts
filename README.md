@@ -11,6 +11,12 @@
 
 ## Installation
 
+Requirements:
+
+- [`claude`](https://docs.anthropic.com/claude/docs/claude-code) CLI
+- [`jq`](https://jqlang.github.io/jq/)
+- `git`, `bash`
+
 ```bash
 cd ~/projects/ # or any workspace what you use
 git clone git@github.com:piecioshka/claude-scripts.git
@@ -72,9 +78,3 @@ what-did-i-do-this-week-workspace ~/projects | npx md-to-pdf > this-week-workspa
 ## License
 
 [The MIT License](https://piecioshka.mit-license.org) @ 2026
-
-## Requirements
-
-- [`claude`](https://docs.anthropic.com/claude/docs/claude-code) CLI
-- [`jq`](https://jqlang.github.io/jq/)
-- `git`, `bash`
