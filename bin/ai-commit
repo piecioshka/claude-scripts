@@ -2,12 +2,23 @@
 
 HINT=""
 SHOW_HELP=""
-for arg in "$@"; do
-  case "$arg" in
+MODEL="${AI_COMMIT_MODEL:-haiku}"
+EFFORT="${AI_COMMIT_EFFORT:-low}"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     -h | --help) SHOW_HELP=1 ;;
     --no-color) export NO_COLOR=1 ;;
-    *) HINT="$arg" ;;
+    -m | --model)
+      MODEL="$2"
+      shift
+      ;;
+    -e | --effort)
+      EFFORT="$2"
+      shift
+      ;;
+    *) HINT="$1" ;;
   esac
+  shift
 done
 
 source "$(dirname "$0")/../shared/spinner.sh"
@@ -27,11 +38,14 @@ changes are split into logical commits. Claude never pushes, amends or
 rewrites history.
 
 ${BOLD}Arguments:${RESET}
-  hint          Optional extra instruction, e.g. "one commit only"
+  hint                   Optional extra instruction, e.g. "one commit only"
 
 ${BOLD}Options:${RESET}
-  --no-color    Disable colored output (also: NO_COLOR=1)
-  -h, --help    Show this help message
+  -m, --model <model>    Claude model (default: haiku, also: AI_COMMIT_MODEL)
+  -e, --effort <level>   Effort level: low, medium, high, xhigh, max
+                         (default: low, also: AI_COMMIT_EFFORT)
+  --no-color             Disable colored output (also: NO_COLOR=1)
+  -h, --help             Show this help message
 EOF
   exit 0
 fi
@@ -70,6 +84,7 @@ Extra instruction from the user: $HINT"
 fi
 
 with_claude_spinner -p "$PROMPT" \
+  --model "$MODEL" --effort "$EFFORT" \
   --allowedTools "Read" "Grep" "Glob" \
     "Bash(git status:*)" "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
     "Bash(git add:*)" "Bash(git commit:*)" "Bash(git restore --staged:*)" \

@@ -44,6 +44,9 @@ Commit the current changes in the **current repository**. Claude reads `git stat
 cd ~/projects/my-repo
 ai-commit
 ai-commit "one commit only"
+
+# Faster by default (haiku, low effort); pick a stronger model for tricky diffs
+ai-commit --model sonnet --effort medium
 ```
 
 ### [`what-did-i-do-this-week`](bin/what-did-i-do-this-week)
