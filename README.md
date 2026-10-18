@@ -51,6 +51,7 @@ Summarize this week's git activity in the **current repository**. Runs `git log`
 ```bash
 cd ~/projects/my-repo
 what-did-i-do-this-week
+what-did-i-do-this-week | npx md-to-pdf > this-week.pdf
 ```
 
 ### [`what-did-i-do-this-week-workspace`](bin/what-did-i-do-this-week-workspace)
@@ -58,20 +59,13 @@ what-did-i-do-this-week
 Summarize this week's git activity across **all repositories** in a workspace directory. For each subdirectory containing a `.git` folder, runs `git log` on the `main` (or `master`) branch since last Monday, then asks Claude to summarize.
 
 ```bash
-# scan current directory
+# Scan current directory
 what-did-i-do-this-week-workspace
 
-# scan a specific workspace
+# Scan a specific workspace
 what-did-i-do-this-week-workspace ~/projects
-```
 
-### Export to PDF
-
-`what-did-i-do-this-week` and `what-did-i-do-this-week-workspace` print the summary as Markdown on stdout (the spinner goes to the terminal only), so you can pipe it to [`md-to-pdf`](https://github.com/simonhaenisch/md-to-pdf) to get a PDF file:
-
-```bash
-what-did-i-do-this-week | npx md-to-pdf > this-week.pdf
-
+# Export to PDF
 what-did-i-do-this-week-workspace ~/projects | npx md-to-pdf > this-week-workspace.pdf
 ```
 
