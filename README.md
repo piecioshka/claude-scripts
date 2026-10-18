@@ -1,5 +1,12 @@
 # claude-scripts
 
+<!-- prettier-ignore-start -->
+[![License: MIT](https://img.shields.io/github/license/piecioshka/claude-scripts)](https://piecioshka.mit-license.org)
+[![Last commit](https://img.shields.io/github/last-commit/piecioshka/claude-scripts)](https://github.com/piecioshka/claude-scripts/commits/main)
+[![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757)](https://docs.anthropic.com/claude/docs/claude-code)
+[![Shell: Bash](https://img.shields.io/badge/shell-bash-4eaa25?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
+<!-- prettier-ignore-end -->
+
 🔨 Claude Code utility scripts
 
 ## Installation
@@ -17,15 +24,19 @@ set -gx PATH $HOME/projects/claude-scripts/bin/ $PATH
 
 **TIP**: After changing the shell configuration, restart the terminal to apply the new settings.
 
-## Requirements
-
-- [`claude`](https://docs.anthropic.com/claude/docs/claude-code) CLI
-- [`jq`](https://jqlang.github.io/jq/)
-- `git`, `bash`
-
 ## Commands
 
 All commands support `-h` / `--help`.
+
+### [`ai-commit`](bin/ai-commit)
+
+Commit the current changes in the **current repository**. Claude reads `git status`, `git diff` and the recent `git log`, learns the commit message conventions of the repo (Conventional Commits, scopes, language) and creates one or more commits that follow them. When something is staged, only the staged changes are committed. It never pushes, amends or rewrites history.
+
+```bash
+cd ~/projects/my-repo
+ai-commit
+ai-commit "one commit only"
+```
 
 ### [`what-did-i-do-this-week`](bin/what-did-i-do-this-week)
 
@@ -48,22 +59,12 @@ what-did-i-do-this-week-workspace
 what-did-i-do-this-week-workspace ~/projects
 ```
 
-### [`ai-commit`](bin/ai-commit)
-
-Commit the current changes in the **current repository**. Claude reads `git status`, `git diff` and the recent `git log`, learns the commit message conventions of the repo (Conventional Commits, scopes, language) and creates one or more commits that follow them. When something is staged, only the staged changes are committed. It never pushes, amends or rewrites history.
-
-```bash
-cd ~/projects/my-repo
-ai-commit
-ai-commit "one commit only"
-```
-
-## Project layout
-
-- [`bin/`](bin/) — executable commands, added to `$PATH`
-- [`shared/`](shared/) — sourced helpers (e.g. spinner)
-- `tmp/` — local scratch files (created on demand, git-ignored)
-
 ## License
 
 [The MIT License](https://piecioshka.mit-license.org) @ 2026
+
+## Requirements
+
+- [`claude`](https://docs.anthropic.com/claude/docs/claude-code) CLI
+- [`jq`](https://jqlang.github.io/jq/)
+- `git`, `bash`
