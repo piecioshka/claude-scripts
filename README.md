@@ -74,6 +74,10 @@ what-did-i-do-this-week-workspace ~/projects
 what-did-i-do-this-week-workspace ~/projects | npx md-to-pdf > this-week-workspace.pdf
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the repo layout and how to add a command.
+
 ## License
 
 [The MIT License](https://piecioshka.mit-license.org) @ 2026
